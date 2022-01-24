@@ -7,7 +7,7 @@ import java.text.ParseException;
 import java.util.*;
 
 public class AdminMenu {
-    public static void init() throws ParseException {
+    public static void init() {
         printMenu();
 
         String message = "Please select a number for the menu option";
@@ -31,25 +31,31 @@ public class AdminMenu {
         }
     }
 
-    public static void seeAllRooms() throws ParseException {
+    public static void seeAllRooms() {
         Collection<IRoom> allRooms = AdminResource.getAllRooms();
-        System.out.println(allRooms);
+        for (IRoom room : allRooms) {
+            System.out.println(room);
+        }
         init();
     }
 
-    public static void seeAllCustomers() throws ParseException {
+    public static void seeAllCustomers()  {
         Collection<Customer> customers = AdminResource.getAllCustomers();
-        System.out.println(customers);
+        for (Customer customer : customers) {
+            System.out.println(customer);
+        }
         init();
     }
 
-    public static void seeAllReservations() throws ParseException {
+    public static void seeAllReservations()  {
         Collection<Reservation> reservations = AdminResource.displayAllReservations();
-        System.out.println(reservations);
+        for (Reservation reservation : reservations) {
+            System.out.println(reservation);
+        }
         init();
     }
 
-    public static void addARoom() throws ParseException {
+    public static void addARoom() {
 
         Scanner scanner = new Scanner(System.in);
         System.out.println("Please enter a room number");
@@ -58,11 +64,12 @@ public class AdminMenu {
         System.out.println("Please enter Price");
         Double price = Double.valueOf(scanner.nextLine());
 
-        System.out.println("Please enter 1 for Single room and 2 for Double room");
-        int roomType = Integer.parseInt(scanner.nextLine());
+        String message = "Please enter 1 for Single bed and 2 for Double bed";
+        String [] requiredOutPuts = {"1", "2"};
+        int bedType = Integer.parseInt(Utility.checkForValidScanInput(message, requiredOutPuts));
 
         RoomType type = RoomType.SINGLE;
-        if (roomType == 2) {
+        if (bedType == 2) {
             type = RoomType.DOUBLE;
         }
 
@@ -73,7 +80,7 @@ public class AdminMenu {
         AdminMenu.addAnotherRoom();
     }
 
-    public static void addAnotherRoom() throws ParseException {
+    public static void addAnotherRoom() {
         System.out.println("Do you want to add more rooms? enter y/n");
         Scanner scanner = new Scanner(System.in);
         boolean keepAskingForRoom = true;
@@ -101,6 +108,5 @@ public class AdminMenu {
         System.out.println("5. Add Test data");
         System.out.println("6. Back to Main Menu");
         System.out.println("----------------------------------------------------");
-        System.out.println("Please select a number for the menu option");
     }
 }
