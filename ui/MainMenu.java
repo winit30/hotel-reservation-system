@@ -17,14 +17,20 @@ public class MainMenu {
         String value = Utility.checkForValidScanInput(message, requiredOutPuts);
 
         int selection = Integer.parseInt(value);
-        if (selection == 1) {
-            findAndReserveARoom();
-        } else if (selection == 2) {
-            seeMyReservations();
-        } else if (selection == 3) {
-            createAnAccount();
-        } else if (selection == 4) {
-            AdminMenu.init();
+
+        switch(selection) {
+            case 1:
+                findAndReserveARoom();
+                break;
+            case 2:
+                seeMyReservations();
+                break;
+            case 3:
+                createAnAccount();
+                break;
+            case 4:
+                AdminMenu.init();
+                break;
         }
     }
 
@@ -92,6 +98,7 @@ public class MainMenu {
                         for (IRoom room : availableRooms) {
                             isValidRoom = Objects.equals(room.getRoomNumber(), roomNumber);
                             if (isValidRoom) {
+                                System.out.println(room.hashCode());
                                 selectedRoom = room;
                                 break;
                             }

@@ -25,20 +25,15 @@ public class Utility {
 
     public static Date validateDate(Scanner scanner) {
         DateFormat formatter = new SimpleDateFormat("mm/dd/yyyy");
-        boolean keepAsking = true;
         String input = null;
-        Date newDate = new Date();
-        while (keepAsking) {
-            try {
-                input = scanner.nextLine();
-                newDate = formatter.parse(input);
-                keepAsking = false;
-            } catch (ParseException e) {
-                e.getLocalizedMessage();
-                System.out.println("Please provide valid date");
-            }
+        try {
+            input = scanner.nextLine();
+            return formatter.parse(input);
+        } catch (ParseException e) {
+            System.out.println("Please provide valid date " + e.getLocalizedMessage());
+            validateDate(scanner);
         }
-        return newDate;
+        return null;
     }
 
     public static String validateEmail(Scanner scanner) {

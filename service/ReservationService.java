@@ -8,8 +8,8 @@ import java.util.*;
 
 public class ReservationService {
 
-    static Map<String, IRoom> rooms = new HashMap<String, IRoom>();
-    static Map<String, ArrayList<Reservation>> reservations = new HashMap<String, ArrayList<Reservation>>();
+    private final static Map<String, IRoom> rooms = new HashMap<String, IRoom>();
+    private final static Map<String, ArrayList<Reservation>> reservations = new HashMap<String, ArrayList<Reservation>>();
 
     public static void addRoom(IRoom room) {
         rooms.put(room.getRoomNumber(), room);

@@ -8,7 +8,7 @@ import java.util.Map;
 
 public class CustomerService {
 
-    public static Map<String, Customer> customers = new HashMap<String, Customer>();
+    private final static Map<String, Customer> customers = new HashMap<String, Customer>();
 
     public static void addCustomer(String email, String firstName, String lastName) {
         Customer newCustomer = new Customer(firstName, lastName, email);
