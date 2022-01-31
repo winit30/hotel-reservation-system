@@ -2,11 +2,12 @@ package ui;
 
 import api.AdminResource;
 import model.*;
-
-import java.text.ParseException;
 import java.util.*;
 
 public class AdminMenu {
+
+    private static final AdminResource adminResource = AdminResource.getInstance();
+
     public static void init() {
         printMenu();
 
@@ -16,23 +17,27 @@ public class AdminMenu {
 
         int selection = Integer.parseInt(value);
 
-        if(selection == 1) {
-            seeAllCustomers();
-        } else if(selection == 2) {
-            seeAllRooms();
-        } else if(selection == 3) {
-            seeAllReservations();
-        } else if(selection == 4) {
-            addARoom();
-        } else if(selection == 5) {
-
-        } else if (selection == 6) {
-            MainMenu.init();
+        switch(selection) {
+            case 1:
+                seeAllCustomers();
+                break;
+            case 2:
+                seeAllRooms();
+                break;
+            case 3:
+                seeAllReservations();
+                break;
+            case 4:
+                addARoom();
+                break;
+            case 6:
+                MainMenu.init();
+                break;
         }
     }
 
     public static void seeAllRooms() {
-        Collection<IRoom> allRooms = AdminResource.getAllRooms();
+        Collection<IRoom> allRooms = adminResource.getAllRooms();
         for (IRoom room : allRooms) {
             System.out.println(room);
         }
@@ -40,7 +45,7 @@ public class AdminMenu {
     }
 
     public static void seeAllCustomers()  {
-        Collection<Customer> customers = AdminResource.getAllCustomers();
+        Collection<Customer> customers = adminResource.getAllCustomers();
         for (Customer customer : customers) {
             System.out.println(customer);
         }
@@ -48,7 +53,7 @@ public class AdminMenu {
     }
 
     public static void seeAllReservations()  {
-        Collection<Reservation> reservations = AdminResource.displayAllReservations();
+        Collection<Reservation> reservations = adminResource.displayAllReservations();
         for (Reservation reservation : reservations) {
             System.out.println(reservation);
         }
@@ -76,7 +81,7 @@ public class AdminMenu {
         List<IRoom> rooms = new ArrayList<IRoom>();
         Room newRoom = new Room(roomNumber, price, type);
         rooms.add(newRoom);
-        AdminResource.addRoom(rooms);
+        adminResource.addRoom(rooms);
         AdminMenu.addAnotherRoom();
     }
 

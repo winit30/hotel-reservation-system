@@ -6,19 +6,27 @@ import model.Reservation;
 import service.CustomerService;
 import service.ReservationService;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.LinkedList;
+import java.util.*;
 
 public class HotelResource {
+
+    private static final HotelResource SINGLETON = new HotelResource();
+    private static final int RECOMMENDED_ROOMS_DEFAULT_PLUS_DAYS = 7;
+    private static final ReservationService reservationService = ReservationService.getInstance();
+    private static final CustomerService customerService = CustomerService.getInstance();
+
+    private HotelResource() {}
+
+    public static HotelResource getInstance() {
+        return SINGLETON;
+    }
+
     public static Customer getCustomer(String email){
-        return CustomerService.getCustomer(email);
+        return customerService.getCustomer(email);
     }
 
     public static void createACustomer(String email, String firstName, String lastName) {
-        CustomerService.addCustomer(email, firstName, lastName);
+        customerService.addCustomer(email, firstName, lastName);
     }
 
     public IRoom getRoom(String roomNumber) {
@@ -27,22 +35,53 @@ public class HotelResource {
 
     public static Reservation bookARoom(String customerEmail, IRoom room, Date checkInDate, Date checkoutDate) {
         Customer customer = getCustomer(customerEmail);
-        return ReservationService.reserveARoom(customer, room, checkInDate, checkoutDate);
+        return reservationService.reserveARoom(customer, room, checkInDate, checkoutDate);
     }
 
     public static Collection<Reservation> getCustomerReservations(String customerEmail) {
-        return ReservationService.getCustomerReservation(customerEmail);
+        return reservationService.getCustomerReservation(customerEmail);
     }
+
+    public static Collection<IRoom> getAllRooms() {
+        return reservationService.getAllRooms();
+    }
+
 
     public static Collection<IRoom> findARoom(Date checkInDate, Date checkoutDate) {
-        return findBookedRooms(checkInDate,checkoutDate);
+        Collection<IRoom> availableRooms = findAvailableRooms(checkInDate,checkoutDate);
+        return availableRooms;
     }
 
-    public static Collection<IRoom> findBookedRooms(Date in, Date out) {
-        Collection<Reservation> reservations = ReservationService.printAllReservation();
+    public static ArrayList findAlternativeDates(Date checkInDate, Date checkoutDate) {
+        ArrayList<Date> datesArray = new ArrayList<>();
+        Collection<IRoom> availableRooms;
+        Date newInDate = checkInDate;
+        Date newOutDate = checkoutDate;
+
+        do {
+            newInDate = addDaysToDate(newInDate);
+            newOutDate = addDaysToDate(newOutDate);
+            availableRooms = findARoom(newInDate, newOutDate);
+        } while(availableRooms.isEmpty());
+
+        datesArray.add(newInDate);
+        datesArray.add(newOutDate);
+
+        return datesArray;
+    }
+
+    public static Date addDaysToDate(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.add(Calendar.DATE, RECOMMENDED_ROOMS_DEFAULT_PLUS_DAYS);
+        return cal.getTime();
+    }
+
+    public static Collection<IRoom> findAvailableRooms(Date in, Date out) {
+        Collection<Reservation> reservations = reservationService.printAllReservation();
         Collection<IRoom> bookedRooms = new LinkedList<>();
         Collection<IRoom> availableRooms = new LinkedList<>();
-        Collection<IRoom> allRooms = ReservationService.getAllRooms();
+        Collection<IRoom> allRooms = reservationService.getAllRooms();
 
         for (Reservation reservation : reservations) {
             if(in.before(reservation.getCheckOutDate())  && out.after(reservation.getCheckInDate())) {

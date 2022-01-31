@@ -8,6 +8,14 @@ import java.util.*;
 
 public class ReservationService {
 
+    private static final ReservationService SINGLETON = new ReservationService();
+
+    private ReservationService() {}
+
+    public static ReservationService getInstance() {
+        return SINGLETON;
+    }
+
     private final static Map<String, IRoom> rooms = new HashMap<String, IRoom>();
     private final static Map<String, ArrayList<Reservation>> reservations = new HashMap<String, ArrayList<Reservation>>();
 

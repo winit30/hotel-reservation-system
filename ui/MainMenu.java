@@ -5,13 +5,18 @@ import model.Customer;
 import model.IRoom;
 import model.Reservation;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MainMenu {
 
+    private static final HotelResource hotelResource = HotelResource.getInstance();
+    public static final Scanner scanner = new Scanner(System.in);
+    private static final DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
+
     public static void init() {
         printMenu();
-
         String message = "Please select a number for the menu option";
         String [] requiredOutPuts = {"1", "2", "3", "4", "5"};
         String value = Utility.checkForValidScanInput(message, requiredOutPuts);
@@ -35,94 +40,113 @@ public class MainMenu {
     }
 
     public static void findAndReserveARoom() {
-        Scanner scanner = new Scanner(System.in);
-        boolean askAgain = true;
-        do {
-            System.out.println("Please enter a check in Date - mm/dd/yyyy (02/20/2021)");
-            Date checkInDate = Utility.validateDate(scanner);
+        Collection<IRoom> allRooms = hotelResource.getAllRooms();
 
-            System.out.println("Please enter a check out Date - mm/dd/yyyy (02/20/2021)");
+        if(allRooms.isEmpty()) {
+            System.out.println("Hotel does not have any rooms yet. Please check after sometime");
+            System.out.println(" ");
+            init();
+        }
 
-            Date checkoutDate = Utility.validateDate(scanner);
+        System.out.println("Please enter a check in Date - dd/mm/yyyy (20/02/2021)");
+        Date checkInDate = Utility.validateDate(scanner);
 
-            Collection<IRoom> availableRooms = HotelResource.findARoom(checkInDate, checkoutDate);
+        System.out.println("Please enter a check out Date - dd/mm/yyyy (21/02/2021)");
+        Date checkoutDate = Utility.validateDate(scanner);
 
-            for (IRoom room: availableRooms) {
-                System.out.println(room);
+        Collection<IRoom> availableRooms = hotelResource.findARoom(checkInDate, checkoutDate);
+
+        if (availableRooms.isEmpty()) {
+            System.out.println("No Rooms Available for the given date. Finding alternative dates...");
+            ArrayList<Date> alternativeDates = hotelResource.findAlternativeDates(checkInDate, checkoutDate);
+
+            System.out.println(" ");
+            String messageAltRooms = "Would you like to see rooms on alternative dates? y/n" + "\n" +
+                    "checkInDate: " + formatter.format(alternativeDates.get(0)) +  "\n" +
+                    "checkOutDate: " + formatter.format(alternativeDates.get(1));
+
+            String[] noRoomsOutPutArr = {"y", "n"};
+            String noRoomsOutPut = Utility.checkForValidScanInput(messageAltRooms, noRoomsOutPutArr);
+
+            if (Objects.equals(noRoomsOutPut, "n")) {
+                init();
+            } else if (Objects.equals(noRoomsOutPut, "y")){
+                Collection<IRoom> alternateRooms = hotelResource.findARoom(alternativeDates.get(0), alternativeDates.get(1));
+                System.out.println(alternateRooms);
+                startReservation(alternateRooms, alternativeDates.get(0), alternativeDates.get(1));
             }
+        } else {
+            startReservation(availableRooms, checkInDate, checkoutDate);
+        }
+    }
 
-            if (availableRooms.stream().count() == 0) {
+    public static void startReservation(Collection<IRoom> availableRooms, Date checkInDate, Date checkoutDate) {
+        System.out.println(" ");
+        for (IRoom room: availableRooms) {
+            System.out.println(room);
+        }
+        System.out.println(" ");
+        String isBookingMessage = "Would you like to book a room? y/n";
+        String[] isBookingOutPutArr = {"y", "n"};
+        String isBooking = Utility.checkForValidScanInput(isBookingMessage, isBookingOutPutArr);
 
-                String messageNoRooms = "No Rooms Available for the given date. Press 1 for try again. Press 2 for main menu";
-                String[] noRoomsOutPutArr = {"1", "2"};
-                String noRoomsOutPut = Utility.checkForValidScanInput(messageNoRooms, noRoomsOutPutArr);
+        if (Objects.equals(isBooking, "n")) {
+            init();
+            return;
+        } else if (Objects.equals(isBooking, "y")) {
 
-                int action = Integer.parseInt(noRoomsOutPut);
-                if (action == 2) {
-                    askAgain = false;
-                    init();
+            String isUserMessage = "Do you have an account with us? y/n";
+            String[] isUserOutPutArr = {"y", "n"};
+            String isUser = Utility.checkForValidScanInput(isUserMessage, isUserOutPutArr);
+
+            if (Objects.equals(isUser, "y")) {
+
+                System.out.println("Please enter your email");
+                String email = Utility.validateEmail(scanner);
+
+                Customer customer = hotelResource.getCustomer(email);
+
+                if (customer == null) {
+                    System.out.println("There is no account associated with this email");
+                    createAccountPrompt();
+                    return;
                 }
-            } else {
 
-                String isBookingMessage = "Would you like to book a room? y/n";
-                String[] isBookingOutPutArr = {"y", "n"};
-                String isBooking = Utility.checkForValidScanInput(isBookingMessage, isBookingOutPutArr);
+                reserveARoom(email, availableRooms, checkInDate, checkoutDate);
 
-                if (Objects.equals(isBooking, "n")) {
-                    askAgain = false;
-                    init();
-                } else if (Objects.equals(isBooking, "y")) {
-
-                    String isUserMessage = "Do you have an account with us? y/n";
-                    String[] isUserOutPutArr = {"y", "n"};
-                    String isUser = Utility.checkForValidScanInput(isUserMessage, isUserOutPutArr);
-                    IRoom selectedRoom = null;
-                    if (Objects.equals(isUser, "y")) {
-
-                        System.out.println("Please enter your email");
-                        String email = Utility.validateEmail(scanner);
-
-                        Customer customer = HotelResource.getCustomer(email);
-
-                        if (customer == null) {
-                            System.out.println("There is no account associated with this email");
-                            createAccountPrompt();
-                            return;
-                        }
-
-                        System.out.println("What room number would you like to reserve?");
-                        String roomNumber = scanner.nextLine();
-
-                        boolean isValidRoom = false;
-
-                        for (IRoom room : availableRooms) {
-                            isValidRoom = Objects.equals(room.getRoomNumber(), roomNumber);
-                            if (isValidRoom) {
-                                System.out.println(room.hashCode());
-                                selectedRoom = room;
-                                break;
-                            }
-                        }
-
-                        if (!isValidRoom) {
-                            System.out.println("Error: Invalid Room Number");
-                            askAgain = false;
-                            init();
-                        } else {
-                            //reserve A Room here
-                            Reservation roomReserved = HotelResource.bookARoom(email, selectedRoom, checkInDate, checkoutDate);
-                            System.out.println(roomReserved);
-                            init();
-                            askAgain = false;
-                        }
-                    } else if (Objects.equals(isUser, "n")) {
-                        //Create an account
-                        createAccountPrompt();
-                        return;
-                    }
-                }
+            } else if (Objects.equals(isUser, "n")) {
+                //Create an account
+                createAccountPrompt();
+                return;
             }
-        } while (askAgain);
+        }
+    }
+
+    public static void reserveARoom(String email, Collection<IRoom> availableRooms, Date checkInDate, Date checkoutDate) {
+        IRoom selectedRoom = null;
+        System.out.println("What room number would you like to reserve?");
+        String roomNumber = scanner.nextLine();
+
+        boolean isValidRoom = false;
+
+        for (IRoom room : availableRooms) {
+            isValidRoom = Objects.equals(room.getRoomNumber(), roomNumber);
+            if (isValidRoom) {
+                System.out.println(room.hashCode());
+                selectedRoom = room;
+                break;
+            }
+        }
+
+        if (!isValidRoom) {
+            System.out.println("Error: Invalid Room Number");
+            reserveARoom(email, availableRooms, checkInDate, checkoutDate);
+        } else {
+            //reserve A Room here
+            Reservation roomReserved = hotelResource.bookARoom(email, selectedRoom, checkInDate, checkoutDate);
+            System.out.println(roomReserved);
+            init();
+        }
     }
 
     public static void createAccountPrompt() {
@@ -140,13 +164,13 @@ public class MainMenu {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Please enter your email");
         String email = Utility.validateEmail(scanner);
-        Customer customer = HotelResource.getCustomer(email);
+        Customer customer = hotelResource.getCustomer(email);
         if(customer == null) {
             System.out.println("There is no account associated with this email");
             createAccountPrompt();
             return;
         }
-        Collection<Reservation> list  = HotelResource.getCustomerReservations(email);
+        Collection<Reservation> list  = hotelResource.getCustomerReservations(email);
         for (Reservation res: list) {
             System.out.println(res);
         }
@@ -161,8 +185,9 @@ public class MainMenu {
         String lastName = scanner.nextLine();
         System.out.println("Please enter Email");
         String email = Utility.validateEmail(scanner);
-        HotelResource.createACustomer(email, firstName, lastName);
+        hotelResource.createACustomer(email, firstName, lastName);
         System.out.println("Hello " + firstName + ", your account has been created");
+        System.out.println(" ");
         init();
     }
 

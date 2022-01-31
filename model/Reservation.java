@@ -1,6 +1,9 @@
 package model;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Objects;
 
 public class Reservation {
@@ -8,6 +11,7 @@ public class Reservation {
     IRoom room;
     Date checkInDate;
     Date checkoutDate;
+    private static final DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy", Locale.ENGLISH);
 
     public Reservation(Customer customer, IRoom room, Date checkInDate, Date checkoutDate) {
         this.customer = customer;
@@ -43,11 +47,11 @@ public class Reservation {
 
     @Override
     public String toString() {
-        return "Reservation{" +
-                "customer=" + customer +
-                ", room=" + room +
-                ", checkInDate=" + checkInDate +
-                ", checkoutDate=" + checkoutDate +
+        return "Reservation{" +  "\n" +
+                "customer= " + customer + "\n" +
+                ", room= " + room + "\n" +
+                ", checkInDate= " + formatter.format(checkInDate) + "\n" +
+                ", checkoutDate= "  + formatter.format(checkoutDate)  + "\n" +
                 '}';
     }
 }

@@ -24,7 +24,7 @@ public class Utility {
     }
 
     public static Date validateDate(Scanner scanner) {
-        DateFormat formatter = new SimpleDateFormat("mm/dd/yyyy");
+        DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         String input = null;
         try {
             input = scanner.nextLine();
